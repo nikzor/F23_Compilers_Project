@@ -1,5 +1,6 @@
 import java.util.*;
 
+// A class required to describe tokens used in the language
 class Token {
     public enum TokenType {
         IDENTIFIER, INTEGER_LITERAL, REAL_LITERAL, BOOLEAN_LITERAL, RECORD, PRIMITIVE_TYPE,

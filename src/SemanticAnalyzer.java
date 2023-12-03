@@ -1,6 +1,6 @@
 import java.util.*;
-import java.util.concurrent.locks.Condition;
 
+// A class that represents the semantics analyzer for the AST of a program.
 class SemanticAnalyzer {
     final List<ASTNode> astNodeList;
 
@@ -10,22 +10,25 @@ class SemanticAnalyzer {
 
     private final Map<String, ASTNode> symbolTable = new HashMap<>();
 
+    // Begins semantic analysis on the AST node list.
     public List<ASTNode> startAnalyze() {
         return analyze(astNodeList);
     }
 
+    // Processes the analysis of the AST node list.
     private List<ASTNode> analyze(List<ASTNode> astNodeList) {
         for (int i = 0; i < astNodeList.size(); i++) {
+            // Analyzes variable declarations.
             if (astNodeList.get(i) instanceof VarDeclaration varDeclaration) {
                 varDeclaration.expression = checkExpression(varDeclaration.expression, i, "var");
                 if (!symbolTable.containsKey(varDeclaration.variableName)) {
                     symbolTable.put(varDeclaration.variableName, varDeclaration);
-                } else if (symbolTable.containsKey(varDeclaration.variableName)) {
+                } else {
                     throw new RuntimeException("Variable already declared");
                 }
                 ASTNode tableNode = symbolTable.get(((VarDeclaration) astNodeList.get(i)).variableName);
                 String typeName = ((TypeNode) ((VarDeclaration) tableNode).variableType).typeName;
-                if ((((VarDeclaration) tableNode).expression) != null && (((VarDeclaration) tableNode).expression) instanceof  LiteralNode) {
+                if ((((VarDeclaration) tableNode).expression) != null && (((VarDeclaration) tableNode).expression) instanceof LiteralNode) {
                     String expressionString = String.valueOf(((LiteralNode) (((VarDeclaration) tableNode).expression)).value);
                     if (typeName.equals("integer")) {
                         VarDeclaration node;
@@ -37,7 +40,10 @@ class SemanticAnalyzer {
                         }
                     }
                 }
-            } else if (astNodeList.get(i) instanceof AssignmentNode assignmentNode) {
+
+            }
+            // Analyzes assignment nodes.
+            else if (astNodeList.get(i) instanceof AssignmentNode assignmentNode) {
                 if (assignmentNode.expression instanceof BinaryOpNode) {
                     assignmentNode.expression = checkExpression(assignmentNode.expression, i, "assignment");
                 } else {
@@ -65,9 +71,15 @@ class SemanticAnalyzer {
                 if (!symbolTable.containsKey(assignmentNode.variableName)) {
                     throw new RuntimeException("Variable not declared before assignment");
                 }
-            } else if (astNodeList.get(i) instanceof RoutineDeclarationNode routineDeclarationNode) {
-                checkRoutineDeclaration(routineDeclarationNode);
-            } else if (astNodeList.get(i) instanceof ForLoop forLoop) {
+            }
+            // Analyzes routine declarations.
+            else if (astNodeList.get(i) instanceof RoutineDeclarationNode routineDeclarationNode) {
+                if (!symbolTable.containsKey(routineDeclarationNode.routineName)) {
+                    symbolTable.put(routineDeclarationNode.routineName, routineDeclarationNode);
+                }
+            }
+            // Analyzes for loops.
+            else if (astNodeList.get(i) instanceof ForLoop forLoop) {
                 String[] rangeVariables = forLoop.range.split("\\.\\.");
                 if (!isNumeric(rangeVariables[0]) && !symbolTable.containsKey(rangeVariables[0])) {
                     throw new RuntimeException("Variable not declared before use");
@@ -80,10 +92,14 @@ class SemanticAnalyzer {
                 }
                 //BlockNode loop = (BlockNode) forLoop.loopBody;
                 //analyze(loop.statements);
-            } else if (astNodeList.get(i) instanceof WhileLoop) {
+            }
+            // Analyzes while loops.
+            else if (astNodeList.get(i) instanceof WhileLoop) {
                 BlockNode loop = (BlockNode) ((WhileLoop) astNodeList.get(i)).loopBody;
                 //analyze(loop.statements);
-            } else if (astNodeList.get(i) instanceof IfStatementNode ifStatementNode) {
+            }
+            // Analyzes if statements.
+            else if (astNodeList.get(i) instanceof IfStatementNode ifStatementNode) {
                 ifStatementNode.condition = checkExpression(ifStatementNode.condition, i, "var");
                 BlockNode thenBlock = (BlockNode) ((IfStatementNode) astNodeList.get(i)).thenBlock;
                 BlockNode elseBlock = (BlockNode) ((IfStatementNode) astNodeList.get(i)).elseBlock;
@@ -96,6 +112,7 @@ class SemanticAnalyzer {
         return astNodeList;
     }
 
+    // Evaluates expressions and ensures they are semantically correct.
     private ASTNode checkExpression(ASTNode expression, int i, String originalDeclaration) {
         if (expression instanceof BinaryOpNode binaryOpNode) {
             ASTNode left = checkExpression(binaryOpNode.left, i, originalDeclaration);
@@ -119,8 +136,7 @@ class SemanticAnalyzer {
                 if (isNumeric(((LiteralNode) left).value) && isNumeric(((LiteralNode) right).value) && (binaryOpNode.operator == Token.TokenType.PLUS || binaryOpNode.operator == Token.TokenType.MINUS || binaryOpNode.operator == Token.TokenType.MULTIPLY || binaryOpNode.operator == Token.TokenType.DIVIDE)) {
                     double result = calculateBinaryOperation(Double.parseDouble(((LiteralNode) left).value), Double.parseDouble(((LiteralNode) right).value), binaryOpNode.operator);
                     if (isDouble(String.valueOf(result)) && originalDeclaration.equals("var")) {
-                        //((VarDeclaration) astNodeList.get(i)).variableType = new TypeNode("real");
-                        symbolTable.put(((VarDeclaration) astNodeList.get(i)).variableName, ((VarDeclaration) astNodeList.get(i)));
+                        symbolTable.put(((VarDeclaration) astNodeList.get(i)).variableName, (astNodeList.get(i)));
                     } else if (isDouble(String.valueOf(result)) && (originalDeclaration.equals("assignment"))) {
                         for (ASTNode astNode : astNodeList) {
                             if (astNode instanceof VarDeclaration && ((VarDeclaration) astNode).variableName.equals(((AssignmentNode) astNodeList.get(i)).variableName)) {
@@ -170,6 +186,8 @@ class SemanticAnalyzer {
         return expression;
     }
 
+
+    // Checks if the literal nodes' types are compatible based on an operator.
     private boolean areTypesCompatible(LiteralNode left, LiteralNode right, Token.TokenType operator) {
         String leftValue = left.value;
         String rightValue = right.value;
@@ -190,6 +208,7 @@ class SemanticAnalyzer {
         };
     }
 
+    // Performs calculations for binary operations.
     private double calculateBinaryOperation(double left, double right, Token.TokenType operator) {
         return switch (operator) {
             case PLUS -> left + right;
@@ -200,6 +219,7 @@ class SemanticAnalyzer {
         };
     }
 
+    // Performs calculations for boolean operations.
     private boolean calculateBooleanOperation(boolean left, boolean right, Token.TokenType operator) {
         return switch (operator) {
             case AND -> left && right;
@@ -208,6 +228,7 @@ class SemanticAnalyzer {
         };
     }
 
+    // Performs calculations for comparison operations.
     private boolean calculateComparisonOperation(double left, double right, Token.TokenType operator) {
         return switch (operator) {
             case EQUALS -> left == right;
@@ -219,6 +240,7 @@ class SemanticAnalyzer {
         };
     }
 
+    // Determines if a string is numeric.
     private boolean isNumeric(String strNum) {
         if (strNum == null) {
             return false;
@@ -231,6 +253,7 @@ class SemanticAnalyzer {
         return true;
     }
 
+    // Determines if a string represents a double value.
     private boolean isDouble(String num) {
         if (num == null) {
             return false;
@@ -243,13 +266,8 @@ class SemanticAnalyzer {
         return false;
     }
 
+    // Determines if a string represents a boolean value.
     private boolean isBoolean(String strBool) {
         return Objects.equals(strBool, "true") || Objects.equals(strBool, "false");
-    }
-
-    private void checkRoutineDeclaration(RoutineDeclarationNode routineDeclaration) {
-        if (!symbolTable.containsKey(routineDeclaration.routineName)) {
-            symbolTable.put(routineDeclaration.routineName, routineDeclaration);
-        }
     }
 }

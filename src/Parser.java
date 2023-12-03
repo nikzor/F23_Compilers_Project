@@ -619,15 +619,6 @@ class Parser {
                 tokens.get(currentTokenIndex).type == Token.TokenType.COMMA;
     }
 
-    // Helper method to check if the current token is a number or identifier
-    private boolean isNumberOrIdentifier() {
-        return match(Token.TokenType.INTEGER_LITERAL) ||
-                match(Token.TokenType.REAL_LITERAL) ||
-                match(Token.TokenType.TRUE) ||
-                match(Token.TokenType.FALSE) ||
-                match(Token.TokenType.IDENTIFIER);
-    }
-
     // Helper method to check if the current token is an operator
     private boolean isOperator() {
         return match(Token.TokenType.PLUS) ||
@@ -653,109 +644,20 @@ class Parser {
 
     // Helper method to get the precedence of an operator
     private int getPrecedence(Token.TokenType operator) {
-        switch (operator) {
-            case PLUS:
-            case MINUS:
-                return 1;
-            case MULTIPLY:
-            case DIVIDE:
-            case REMAINDER:
-                return 2;
-            case LESS_THAN:
-            case LESS_THAN_OR_EQUAL:
-            case GREATER_THAN:
-            case GREATER_THAN_OR_EQUAL:
-            case EQUALS:
-            case NOT_EQUALS:
-                return 3;
-            case AND:
-                return 4;
-            case OR:
-                return 5;
-            case XOR:
-                return 6;
-            default:
-                return 0;
-        }
+        return switch (operator) {
+            case PLUS, MINUS -> 1;
+            case MULTIPLY, DIVIDE, REMAINDER -> 2;
+            case LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL, EQUALS, NOT_EQUALS -> 3;
+            case AND -> 4;
+            case OR -> 5;
+            case XOR -> 6;
+            default -> 0;
+        };
     }
 
     // Helper method to create a BinaryOpNode with the specified operator and operands
     private ASTNode createBinaryOpNode(Token.TokenType operator, ASTNode right, ASTNode left) {
         return new BinaryOpNode(operator, left, right);
-    }
-
-    private ASTNode parseTerm() {
-        ASTNode left = parseFactor(); // Parse a factor
-
-        while (match(Token.TokenType.MULTIPLY) || match(Token.TokenType.DIVIDE) || match(Token.TokenType.REMAINDER)) {
-            Token.TokenType operator = tokens.get(currentTokenIndex - 1).type;
-            ASTNode right = parseFactor();
-            left = new BinaryOpNode(operator, left, right); // Create a binary node
-        }
-
-        return left;
-    }
-
-    // Helper method to parse a simple expression
-    private ASTNode parseSimple() {
-        ASTNode left = parseSummand();
-
-        while (match(Token.TokenType.PLUS) || match(Token.TokenType.MINUS)) {
-            Token.TokenType operator = tokens.get(currentTokenIndex - 1).type;
-            ASTNode right = parseSummand();
-
-            // Create a node representing the addition or subtraction
-            left = new BinaryOpNode(operator, left, right);
-        }
-
-        return left;
-    }
-
-    // Helper method to parse a summand
-    private ASTNode parseSummand() {
-        ASTNode left = parseFactor();
-
-        while (match(Token.TokenType.MULTIPLY) || match(Token.TokenType.DIVIDE) || match(Token.TokenType.REMAINDER)) {
-            Token.TokenType operator = tokens.get(currentTokenIndex - 1).type;
-            ASTNode right = parseFactor();
-
-            // Create a node representing the multiplication, division, or remainder
-            left = new BinaryOpNode(operator, left, right);
-        }
-
-        return left;
-    }
-
-    // Helper method to parse a factor
-    private ASTNode parseFactor() {
-        if (match(Token.TokenType.PLUS) || match(Token.TokenType.MINUS)) {
-            Token.TokenType operator = tokens.get(currentTokenIndex - 1).type;
-            ASTNode operand = parseFactor(); // Handle unary plus or minus here
-            return new UnaryOpNode(operator, operand);
-        }
-
-        return parsePrimary();
-    }
-
-    // Helper method to parse a primary expression
-    private ASTNode parsePrimary() {
-        if (tokens.get(currentTokenIndex).type.equals(Token.TokenType.IDENTIFIER) && tokens.get(currentTokenIndex+1).type.equals(Token.TokenType.LPAREN)){
-            return parseFunctionCall();
-        }
-        if (match(Token.TokenType.INTEGER_LITERAL) ||
-                match(Token.TokenType.REAL_LITERAL) ||
-                match(Token.TokenType.TRUE) ||
-                match(Token.TokenType.FALSE) ||
-                match(Token.TokenType.IDENTIFIER)) {
-            // Create a node representing literals or identifiers
-            return new LiteralNode(tokens.get(currentTokenIndex - 1).value);
-        } else if (match(Token.TokenType.LPAREN)) {
-            ASTNode expression = parseExpression();
-            consume(Token.TokenType.RPAREN, "Expect ')' after expression");
-            return expression;
-        } else {
-            throw new RuntimeException("Invalid primary");
-        }
     }
 
     // Helper method to check if the current token matches a given type

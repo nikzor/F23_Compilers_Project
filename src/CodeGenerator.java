@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.Map;
-public class CodeGenerator {
+class CodeGenerator {
     private final List<ASTNode> astNodes;
 
     public CodeGenerator(List<ASTNode> astNodes) {
@@ -25,7 +25,7 @@ public class CodeGenerator {
 
         try (FileWriter writer = new FileWriter(outputFileName)) {
             // Generate Jasmin file header
-            writer.write(".class public Example\n");
+            writer.write(".class public GeneratedClass\n");
             writer.write(".super java/lang/Object\n\n");
 
             // Generate fields for variable declarations
@@ -61,17 +61,17 @@ public class CodeGenerator {
                 } else {
                     writer.write("ldc " + value.value + " \n");
                 }
-                writer.write("putstatic Example/" + assignmentNode.variableName + " " + getVarTypeFromVarName(assignmentNode.variableName) + "\n");
+                writer.write("putstatic GeneratedClass/" + assignmentNode.variableName + " " + getVarTypeFromVarName(assignmentNode.variableName) + "\n");
             } else if (assignmentNode.expression instanceof BinaryOpNode binaryNode) {
                 if (binaryNode.left instanceof LiteralNode left && isNumeric(left.value)){
                     writer.write("ldc " + left.value + " \n");
                 } else if (binaryNode.left instanceof LiteralNode left) {
-                    writer.write("getstatic Example/" + left.value + " " + getVarTypeFromVarName(left.value) + "\n");
+                    writer.write("getstatic GeneratedClass/" + left.value + " " + getVarTypeFromVarName(left.value) + "\n");
                 }
                 if (binaryNode.right instanceof LiteralNode right && isNumeric(right.value)){
                     writer.write("ldc " + right.value + " \n");
                 } else if (binaryNode.right instanceof LiteralNode right) {
-                    writer.write("getstatic Example/" + right.value + " " + getVarTypeFromVarName(right.value) + "\n");
+                    writer.write("getstatic GeneratedClass/" + right.value + " " + getVarTypeFromVarName(right.value) + "\n");
                 }
                 switch (binaryNode.operator) {
                     case PLUS:
@@ -90,12 +90,12 @@ public class CodeGenerator {
                     default:
                         throw new UnsupportedOperationException("Unsupported binary operator: " + binaryNode.operator);
                 }
-                writer.write("putstatic Example/" + assignmentNode.variableName + " " + getVarTypeFromVarName(assignmentNode.variableName) + "\n");
+                writer.write("putstatic GeneratedClass/" + assignmentNode.variableName + " " + getVarTypeFromVarName(assignmentNode.variableName) + "\n");
             }
         } else if (node instanceof VarDeclaration varNode && varNode.expression != null) {
             // todo: asd
             writer.write("ldc " + ((LiteralNode) varNode.expression).value + " \n");
-            writer.write("putstatic Example/" + varNode.variableName + " " + getVarType((TypeNode) varNode.variableType) + "\n");
+            writer.write("putstatic GeneratedClass/" + varNode.variableName + " " + getVarType((TypeNode) varNode.variableType) + "\n");
         } else if (node instanceof IfStatementNode ifStatementNode) {
             String endLabel = "LabelEnd" + uniqueLabelIndex();
             String elseLabel = ifStatementNode.elseBlock != null ? "LabelElse" + uniqueLabelIndex() : endLabel;
@@ -176,10 +176,10 @@ public class CodeGenerator {
 //            }
 
             // Loop body: Increment 'a' by the loop index 'i'
-            writer.write("getstatic Example/a I\n");
+            writer.write("getstatic GeneratedClass/a I\n");
             writer.write("iload " + loopVarIndex + "\n");
             writer.write("iadd\n");
-            writer.write("putstatic Example/a I\n");
+            writer.write("putstatic GeneratedClass/a I\n");
 
             // Increment loop variable
             writer.write("iinc " + loopVarIndex + " 1\n");
@@ -243,7 +243,7 @@ public class CodeGenerator {
                 } else if (Objects.equals(leftValue.value, "false")) {
                     writer.write("ldc 0\n");
                 } else {
-                    writer.write("getstatic Example/" + leftValue.value + " " + getVarTypeFromVarName(leftValue.value) + "\n");
+                    writer.write("getstatic GeneratedClass/" + leftValue.value + " " + getVarTypeFromVarName(leftValue.value) + "\n");
                 }
             }
             if (comparison.right instanceof LiteralNode rightValue) {
@@ -254,7 +254,7 @@ public class CodeGenerator {
                 } else if (Objects.equals(rightValue.value, "false")) {
                     writer.write("ldc 0\n");
                 } else {
-                    writer.write("getstatic Example/" + rightValue.value + " " + getVarTypeFromVarName(rightValue.value) + "\n");
+                    writer.write("getstatic GeneratedClass/" + rightValue.value + " " + getVarTypeFromVarName(rightValue.value) + "\n");
                 }
             }
             Token.TokenType operator = comparison.operator;
@@ -297,7 +297,7 @@ public class CodeGenerator {
                 } else if (Objects.equals(leftValue.value, "false")) {
                     writer.write("ldc 0\n");
                 } else {
-                    writer.write("getstatic Example/" + leftValue.value + " " + getVarTypeFromVarName(leftValue.value) + "\n");
+                    writer.write("getstatic GeneratedClass/" + leftValue.value + " " + getVarTypeFromVarName(leftValue.value) + "\n");
                 }
             }
             if (comparison.right instanceof LiteralNode rightValue) {
@@ -308,7 +308,7 @@ public class CodeGenerator {
                 } else if (Objects.equals(rightValue.value, "false")) {
                     writer.write("ldc 0\n");
                 } else {
-                    writer.write("getstatic Example/" + rightValue.value + " " + getVarTypeFromVarName(rightValue.value) + "\n");
+                    writer.write("getstatic GeneratedClass/" + rightValue.value + " " + getVarTypeFromVarName(rightValue.value) + "\n");
                 }
             }
             Token.TokenType operator = comparison.operator;
