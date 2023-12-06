@@ -3,8 +3,11 @@ var y: real is 3.14;
 
 x:=4+3+1+123.1;
 y:=33+x+2.8;
-var a: integer is 1;
 
+var p: boolean is true;
+p := true and false or true;
+
+var a: integer is 1;
 if a>2 then
     a := 1;
 else

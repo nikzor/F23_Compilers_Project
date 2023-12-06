@@ -30,7 +30,7 @@ public class Main {
     private static String readFile() {
         StringBuilder content = new StringBuilder();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("source.txt"));
+            BufferedReader reader = new BufferedReader(new FileReader("to_check.txt"));
             String line;
             while ((line = reader.readLine()) != null) {
                 content.append(line).append("\n");

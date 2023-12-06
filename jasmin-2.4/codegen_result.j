@@ -1,9 +1,10 @@
 .class public GeneratedClass
 .super java/lang/Object
 
-.field static x I
 .field static a I
 .field static y F
+.field static x I
+.field static p I
 .method public static main([Ljava/lang/String;)V
 .limit stack 100
 .limit locals 100
@@ -16,6 +17,10 @@ ldc 131
 putstatic GeneratedClass/x I
 ldc 166.8 
 putstatic GeneratedClass/y F
+ldc 1 
+putstatic GeneratedClass/p I
+ldc 1 
+putstatic GeneratedClass/p I
 ldc 1 
 putstatic GeneratedClass/a I
 ldc 1 

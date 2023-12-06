@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.Map;
+
 class CodeGenerator {
     private final List<ASTNode> astNodes;
 
@@ -63,12 +64,12 @@ class CodeGenerator {
                 }
                 writer.write("putstatic GeneratedClass/" + assignmentNode.variableName + " " + getVarTypeFromVarName(assignmentNode.variableName) + "\n");
             } else if (assignmentNode.expression instanceof BinaryOpNode binaryNode) {
-                if (binaryNode.left instanceof LiteralNode left && isNumeric(left.value)){
+                if (binaryNode.left instanceof LiteralNode left && isNumeric(left.value)) {
                     writer.write("ldc " + left.value + " \n");
                 } else if (binaryNode.left instanceof LiteralNode left) {
                     writer.write("getstatic GeneratedClass/" + left.value + " " + getVarTypeFromVarName(left.value) + "\n");
                 }
-                if (binaryNode.right instanceof LiteralNode right && isNumeric(right.value)){
+                if (binaryNode.right instanceof LiteralNode right && isNumeric(right.value)) {
                     writer.write("ldc " + right.value + " \n");
                 } else if (binaryNode.right instanceof LiteralNode right) {
                     writer.write("getstatic GeneratedClass/" + right.value + " " + getVarTypeFromVarName(right.value) + "\n");
@@ -93,9 +94,18 @@ class CodeGenerator {
                 writer.write("putstatic GeneratedClass/" + assignmentNode.variableName + " " + getVarTypeFromVarName(assignmentNode.variableName) + "\n");
             }
         } else if (node instanceof VarDeclaration varNode && varNode.expression != null) {
-            // todo: asd
-            writer.write("ldc " + ((LiteralNode) varNode.expression).value + " \n");
-            writer.write("putstatic GeneratedClass/" + varNode.variableName + " " + getVarType((TypeNode) varNode.variableType) + "\n");
+            if (varNode.expression instanceof LiteralNode literalNode && ((TypeNode) varNode.variableType).typeName.equals("boolean")) {
+                if (literalNode.value.equals("true")) {
+                    writer.write("ldc 1 \n");
+                    writer.write("putstatic GeneratedClass/" + varNode.variableName + " " + getVarType((TypeNode) varNode.variableType) + "\n");
+                } else {
+                    writer.write("ldc 0 \n");
+                    writer.write("putstatic GeneratedClass/" + varNode.variableName + " " + getVarType((TypeNode) varNode.variableType) + "\n");
+                }
+            } else {
+                writer.write("ldc " + ((LiteralNode) varNode.expression).value + " \n");
+                writer.write("putstatic GeneratedClass/" + varNode.variableName + " " + getVarType((TypeNode) varNode.variableType) + "\n");
+            }
         } else if (node instanceof IfStatementNode ifStatementNode) {
             String endLabel = "LabelEnd" + uniqueLabelIndex();
             String elseLabel = ifStatementNode.elseBlock != null ? "LabelElse" + uniqueLabelIndex() : endLabel;

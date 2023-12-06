@@ -1,0 +1,30 @@
+type box is Box;
+
+var x: integer is 42;
+var y: real is 3.14;
+x:=1+4.3+4;
+x:=true and false;
+for i in reverse 1..5 loop
+    var z: integer is i;
+end;
+
+var p: integer;
+
+routine add(a: integer, b: integer): integer is
+    a := a + b;
+    return a;
+end;
+
+var q: boolean is add(3, 5);
+
+while a and b loop
+    x := x + 1;
+end;
+
+var a: integer is 1;
+
+if 3>2 then
+    a := 1;
+else
+    a := 2;
+end;
